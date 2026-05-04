@@ -1,0 +1,147 @@
+import { useEffect, useRef, useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { SectionHead } from "./SectionHead";
+
+const stroke = {
+  fill: "none" as const, stroke: "currentColor", strokeWidth: 1.6,
+  strokeLinecap: "round" as const, strokeLinejoin: "round" as const,
+};
+
+const services = [
+  {
+    title: "Web Development",
+    tag: "Build",
+    slug: "/services/web-development",
+    desc: "High-converting websites and platforms built for performance, not appearances.",
+    icon: (<svg width="22" height="22" viewBox="0 0 24 24" {...stroke}><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 3v18" /></svg>),
+  },
+  {
+    title: "AI Integration",
+    tag: "Intelligent",
+    slug: "/services/ai-integration",
+    desc: "Practical AI for the areas where it creates real value: support, ops, and content.",
+    icon: (<svg width="22" height="22" viewBox="0 0 24 24" {...stroke}><path d="M12 2a7 7 0 0 1 7 7c0 2.5-1.3 4.6-3 6l-.5 4h-7L8 15c-1.7-1.4-3-3.5-3-6a7 7 0 0 1 7-7zM9 21h6" /></svg>),
+  },
+  {
+    title: "Process Automation",
+    tag: "Automate",
+    slug: "/services/process-automation",
+    desc: "We remove repetitive tasks and streamline your operations, saving your team hours every week.",
+    icon: (<svg width="22" height="22" viewBox="0 0 24 24" {...stroke}><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" /></svg>),
+  },
+  {
+    title: "Systems Integration",
+    tag: "Connect",
+    slug: "/services/systems-integration",
+    desc: "Your tools, data, and CRM connected and working as one unified system.",
+    icon: (<svg width="22" height="22" viewBox="0 0 24 24" {...stroke}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>),
+  },
+  {
+    title: "Meta & Google Ads",
+    tag: "Growth",
+    slug: "/services/meta-google-ads",
+    desc: "Paid campaigns built around measurable return, not vanity metrics.",
+    icon: (<svg width="22" height="22" viewBox="0 0 24 24" {...stroke}><path d="M3 3v18h18M7 14l4-4 4 4 5-5" /></svg>),
+  },
+  {
+    title: "GTM Engineering",
+    tag: "Scale",
+    slug: "/services/gtm-engineering",
+    desc: "Clay, Apollo, Zapier, and your CRM wired into one automated outbound engine.",
+    icon: (<svg width="22" height="22" viewBox="0 0 24 24" {...stroke}><circle cx="12" cy="12" r="9" /><path d="M12 3v18M3 12h18M5.64 5.64l12.72 12.72M5.64 18.36L18.36 5.64" /></svg>),
+  },
+];
+
+function ServiceCard({ s, index }: { s: (typeof services)[0]; index: number }) {
+  const num = String(index + 1).padStart(2, "0");
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
+      { threshold: 0.08 },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  const onMove = (e: React.MouseEvent<HTMLElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.style.setProperty("--gx", `${e.clientX - r.left}px`);
+    e.currentTarget.style.setProperty("--gy", `${e.clientY - r.top}px`);
+  };
+  const onLeave = (e: React.MouseEvent<HTMLElement>) => {
+    e.currentTarget.style.setProperty("--gx", "-600px");
+    e.currentTarget.style.setProperty("--gy", "-600px");
+  };
+
+  return (
+    <div
+      ref={wrapRef}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0) scale(1)" : "translateY(28px) scale(0.97)",
+        transition: `opacity 0.5s ease ${index * 70}ms, transform 0.5s ease ${index * 70}ms`,
+      }}
+    >
+      <Link
+        to={s.slug}
+        onMouseMove={onMove}
+        onMouseLeave={onLeave}
+        className="group relative flex flex-col overflow-hidden rounded-[22px] border border-border-soft bg-background p-8 transition-all duration-300 hover:-translate-y-1 hover:border-[color-mix(in_oklab,var(--blue)_30%,transparent)] hover:shadow-[0_24px_56px_color-mix(in_oklab,var(--navy)_8%,transparent)]"
+        style={{ "--gx": "-600px", "--gy": "-600px" } as React.CSSProperties}
+      >
+        {/* Mouse spotlight */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-[inherit] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+          style={{ background: "radial-gradient(circle 280px at var(--gx) var(--gy), color-mix(in oklab, var(--blue) 6%, transparent), transparent)" }} />
+
+        {/* Ghost number */}
+        <span aria-hidden="true" className="pointer-events-none absolute right-5 top-2 select-none font-display font-bold leading-none text-text-base/[0.05] transition-colors duration-300 group-hover:text-text-base/[0.09]" style={{ fontSize: 96 }}>{num}</span>
+
+        {/* Tag */}
+        <div className="mb-6">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-text-light transition-colors duration-300 group-hover:border-[color-mix(in_oklab,var(--blue)_25%,transparent)] group-hover:text-blue">
+            <span className="h-1 w-1 rounded-full bg-current" />{s.tag}
+          </span>
+        </div>
+
+        {/* Icon */}
+        <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-soft text-blue ring-1 ring-[color-mix(in_oklab,var(--blue)_15%,transparent)] transition-all duration-300 group-hover:shadow-[0_4px_16px_color-mix(in_oklab,var(--blue)_20%,transparent)]">
+          {s.icon}
+        </div>
+
+        <h3 className="mb-3 text-[20px] font-semibold leading-snug tracking-tight text-text-base transition-colors duration-200 group-hover:text-blue">{s.title}</h3>
+        <p className="relative z-10 flex-1 text-[14px] leading-[1.8] text-text-muted">{s.desc}</p>
+
+        {/* Arrow CTA */}
+        <div className="mt-5 flex items-center gap-1.5 text-[12px] font-medium text-blue opacity-0 transition-all duration-300 group-hover:opacity-100">
+          Learn more
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M3 8h10M9 4l4 4-4 4" />
+          </svg>
+        </div>
+
+        <div aria-hidden="true" className="absolute bottom-0 left-8 right-8 h-[1.5px] rounded-full bg-gradient-to-r from-transparent via-blue to-transparent opacity-0 transition-all duration-500 group-hover:opacity-100" />
+      </Link>
+    </div>
+  );
+}
+
+export function Services() {
+  return (
+    <section id="services" className="bg-background px-6 py-16 md:px-[72px]">
+      <SectionHead
+        tag="What we do"
+        title="Six outcomes,"
+        accent="one vendor."
+        sub="No handoffs, no misalignment. Everything you need to grow, run by one team that stays accountable."
+      />
+      <div className="mx-auto grid max-w-[1280px] grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {services.map((s, i) => <ServiceCard key={s.title} s={s} index={i} />)}
+      </div>
+    </section>
+  );
+}
