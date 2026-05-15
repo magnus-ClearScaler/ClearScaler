@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>What should Milena do today?</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: Inter, system-ui, sans-serif;
+    overflow: hidden;
+    position: relative;
+  }
+  #bg {
+    position: fixed; inset: 0;
+    background-image: url('/images/milena.jpg');
+    background-size: cover;
+    background-position: center 20%;
+    filter: brightness(0.45) blur(3px);
+    transform: scale(1.06);
+  }
+  #overlay {
+    position: fixed; inset: 0;
+    background: linear-gradient(160deg, rgba(108,99,255,0.35) 0%, rgba(20,10,40,0.65) 100%);
+  }
+  #content {
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 8px;
+    padding: 40px 20px;
+    width: 100%; max-width: 500px;
+  }
+  .eyebrow {
+    color: rgba(255,255,255,0.55);
+    font-size: 12px; letter-spacing: 0.14em;
+    text-transform: uppercase; margin-bottom: 4px;
+  }
+  h1 {
+    color: white;
+    font-size: clamp(24px, 6vw, 36px);
+    font-weight: 900; text-align: center; line-height: 1.2;
+    margin-bottom: 28px;
+    text-shadow: 0 2px 24px rgba(0,0,0,0.4);
+  }
+  #wheel-wrap { position: relative; }
+  #pointer {
+    position: absolute; top: -16px; left: 50%;
+    transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 14px solid transparent;
+    border-right: 14px solid transparent;
+    border-top: 26px solid white;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.45));
+    z-index: 10;
+  }
+  canvas {
+    border-radius: 50%;
+    box-shadow: 0 0 0 4px rgba(255,255,255,0.25), 0 24px 64px rgba(0,0,0,0.55);
+    display: block;
+  }
+  #spin-btn {
+    margin-top: 24px;
+    padding: 14px 52px;
+    font-size: 18px; font-weight: 800;
+    letter-spacing: 0.04em;
+    background: linear-gradient(135deg, #FF6B9D, #FF9F43);
+    color: white; border: none; border-radius: 999px;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(255,107,157,0.5);
+    transition: transform 0.2s, opacity 0.2s;
+  }
+  #spin-btn:hover { transform: scale(1.04); }
+  #spin-btn:disabled {
+    background: rgba(255,255,255,0.2);
+    box-shadow: none; cursor: not-allowed;
+    transform: scale(0.97);
+  }
+  #result {
+    margin-top: 20px;
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 20px 36px;
+    text-align: center; max-width: 360px; width: 100%;
+    opacity: 0; transform: translateY(12px) scale(0.95);
+    transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  #result.show { opacity: 1; transform: translateY(0) scale(1); }
+  #result .label {
+    color: rgba(255,255,255,0.7);
+    font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase; margin-bottom: 8px;
+  }
+  #result .answer {
+    color: white; font-size: 22px; font-weight: 800; line-height: 1.3;
+  }
+</style>
+</head>
+<body>
+<div id="bg"></div>
+<div id="overlay"></div>
+<div id="content">
+  <p class="eyebrow">The big question…</p>
+  <h1>What should Milena<br>do today? 🌟</h1>
+  <div id="wheel-wrap">
+    <div id="pointer"></div>
+    <canvas id="wheel"></canvas>
+  </div>
+  <button id="spin-btn">✨  Spin!</button>
+  <div id="result">
+    <div class="label">Tonight, Milena should…</div>
+    <div class="answer" id="answer-text"></div>
+  </div>
+</div>
+
+<script>
+const OPTIONS = [
+  { label: ["Go straight", "to Donna"],   color: "#FF6B9D" },
+  { label: ["Go to", "sleep 😴"],          color: "#6C63FF" },
+  { label: ["Salsa 💃"],                   color: "#FF9F43" },
+  { label: ["Meet Magnus", "a bit later"], color: "#26C6DA" },
+];
+const NUM = OPTIONS.length;
+const ARC = (2 * Math.PI) / NUM;
+
+const canvas = document.getElementById("wheel");
+const btn    = document.getElementById("spin-btn");
+const result = document.getElementById("result");
+const answerEl = document.getElementById("answer-text");
+
+let angle = -Math.PI / 2 - ARC / 2;
+let spinning = false;
+
+function draw(a) {
+  const size = canvas.width;
+  const cx = size / 2, cy = size / 2, r = cx - 6;
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, size, size);
+
+  OPTIONS.forEach((opt, i) => {
+    const s = a + i * ARC, e = s + ARC;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, s, e);
+    ctx.closePath();
+    ctx.fillStyle = opt.color;
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255,255,255,0.2)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(s + ARC / 2);
+    const fs = size / 22;
+    ctx.font = `700 ${fs}px Inter,system-ui,sans-serif`;
+    ctx.fillStyle = "#fff";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    const lh = fs * 1.4, total = opt.label.length * lh;
+    opt.label.forEach((line, li) => {
+      ctx.fillText(line, r * 0.6, -total / 2 + li * lh + lh / 2);
+    });
+    ctx.restore();
+  });
+
+  // Outer ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+  ctx.strokeStyle = "rgba(255,255,255,0.45)";
+  ctx.lineWidth = 4;
+  ctx.stroke();
+
+  // Hub
+  const hub = size / 11;
+  const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, hub);
+  g.addColorStop(0, "#fff"); g.addColorStop(1, "#ddd");
+  ctx.beginPath();
+  ctx.arc(cx, cy, hub, 0, 2 * Math.PI);
+  ctx.fillStyle = g; ctx.fill();
+  ctx.strokeStyle = "rgba(0,0,0,0.12)"; ctx.lineWidth = 2; ctx.stroke();
+}
+
+function resize() {
+  const size = Math.min(window.innerWidth * 0.82, 400);
+  canvas.width = canvas.height = size;
+  draw(angle);
+}
+resize();
+window.addEventListener("resize", resize);
+
+btn.addEventListener("click", () => {
+  if (spinning) return;
+  spinning = true;
+  btn.disabled = true;
+  btn.textContent = "Spinning…";
+  result.classList.remove("show");
+
+  const winner = Math.floor(Math.random() * NUM);
+  const spins  = (6 + Math.floor(Math.random() * 4)) * 2 * Math.PI;
+  const target = -Math.PI / 2 - (winner + 0.5) * ARC
+                 - (Math.random() * ARC * 0.5 - ARC * 0.25);
+  const delta  = spins + ((target - angle) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+  const start  = angle;
+  const dur    = 4200 + Math.random() * 800;
+  const t0     = performance.now();
+
+  function tick(now) {
+    const p = Math.min((now - t0) / dur, 1);
+    const e = 1 - Math.pow(1 - p, 4); // ease-out quart
+    angle = start + delta * e;
+    draw(angle);
+    if (p < 1) { requestAnimationFrame(tick); return; }
+
+    spinning = false;
+    btn.disabled = false;
+    btn.textContent = "✨  Spin again!";
+    answerEl.textContent = OPTIONS[winner].label.join(" ");
+    result.style.borderColor = OPTIONS[winner].color;
+    setTimeout(() => result.classList.add("show"), 80);
+  }
+  requestAnimationFrame(tick);
+});
+</script>
+</body>
+</html>
