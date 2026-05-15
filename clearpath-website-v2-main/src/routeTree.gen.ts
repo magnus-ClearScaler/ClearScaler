@@ -12,6 +12,7 @@ import { Route as ServicesAutomationRouteImport } from './routes/services/proces
 import { Route as ServicesIntegrationRouteImport } from './routes/services/systems-integration'
 import { Route as ServicesAdsRouteImport } from './routes/services/meta-google-ads'
 import { Route as ServicesGTMRouteImport } from './routes/services/gtm-engineering'
+import { Route as MilenaRouteImport } from './routes/milena'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -67,10 +68,17 @@ const ServicesGTMRoute = ServicesGTMRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 
+const MilenaRoute = MilenaRouteImport.update({
+  id: '/milena',
+  path: '/milena',
+  getParentRoute: () => rootRouteImport,
+} as any)
+
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
+  '/milena': typeof MilenaRoute
   '/services/web-development': typeof ServicesWebDevRoute
   '/services/ai-integration': typeof ServicesAIRoute
   '/services/process-automation': typeof ServicesAutomationRoute
@@ -82,6 +90,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
+  '/milena': typeof MilenaRoute
   '/services/web-development': typeof ServicesWebDevRoute
   '/services/ai-integration': typeof ServicesAIRoute
   '/services/process-automation': typeof ServicesAutomationRoute
@@ -94,6 +103,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
+  '/milena': typeof MilenaRoute
   '/services/web-development': typeof ServicesWebDevRoute
   '/services/ai-integration': typeof ServicesAIRoute
   '/services/process-automation': typeof ServicesAutomationRoute
@@ -103,16 +113,17 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/contact' | '/services/web-development' | '/services/ai-integration' | '/services/process-automation' | '/services/systems-integration' | '/services/meta-google-ads' | '/services/gtm-engineering'
+  fullPaths: '/' | '/about' | '/contact' | '/milena' | '/services/web-development' | '/services/ai-integration' | '/services/process-automation' | '/services/systems-integration' | '/services/meta-google-ads' | '/services/gtm-engineering'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/contact' | '/services/web-development' | '/services/ai-integration' | '/services/process-automation' | '/services/systems-integration' | '/services/meta-google-ads' | '/services/gtm-engineering'
-  id: '__root__' | '/' | '/about' | '/contact' | '/services/web-development' | '/services/ai-integration' | '/services/process-automation' | '/services/systems-integration' | '/services/meta-google-ads' | '/services/gtm-engineering'
+  to: '/' | '/about' | '/contact' | '/milena' | '/services/web-development' | '/services/ai-integration' | '/services/process-automation' | '/services/systems-integration' | '/services/meta-google-ads' | '/services/gtm-engineering'
+  id: '__root__' | '/' | '/about' | '/contact' | '/milena' | '/services/web-development' | '/services/ai-integration' | '/services/process-automation' | '/services/systems-integration' | '/services/meta-google-ads' | '/services/gtm-engineering'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   ContactRoute: typeof ContactRoute
+  MilenaRoute: typeof MilenaRoute
   ServicesWebDevRoute: typeof ServicesWebDevRoute
   ServicesAIRoute: typeof ServicesAIRoute
   ServicesAutomationRoute: typeof ServicesAutomationRoute
@@ -142,6 +153,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/milena': {
+      id: '/milena'
+      path: '/milena'
+      fullPath: '/milena'
+      preLoaderRoute: typeof MilenaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/services/web-development': {
@@ -193,6 +211,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute,
   AboutRoute,
   ContactRoute,
+  MilenaRoute,
   ServicesWebDevRoute,
   ServicesAIRoute,
   ServicesAutomationRoute,
